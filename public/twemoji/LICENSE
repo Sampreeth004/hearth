@@ -1,0 +1,7 @@
+Emoji artwork: Twemoji
+https://github.com/jdecked/twemoji
+Copyright 2020 Twitter, Inc and other contributors.
+Graphics licensed under CC-BY 4.0: https://creativecommons.org/licenses/by/4.0/
+
+The SVG asset files are distributed via the @twemoji/svg npm package
+(https://www.npmjs.com/package/@twemoji/svg), which is licensed under MIT.

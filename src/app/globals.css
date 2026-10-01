@@ -1,0 +1,502 @@
+@import "tailwindcss";
+
+/* ==========================================================================
+   Happy Hues Palette 15 — pastel matte color tokens (light mode only)
+   Composition: warm cream canvas -> off-white surfaces -> matte pink accent
+   ========================================================================== */
+
+:root {
+  color-scheme: light;
+
+  /* Typography stacks (font files are provided by next/font on <html>) */
+  --font-stack-ui: var(--font-jakarta), system-ui, -apple-system,
+    BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-stack-dm: var(--font-dm-sans), system-ui, -apple-system,
+    BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+  /* Warm cream #FAEEE7 */
+  --surface-background: #faeee7;
+
+  /* Dark brown #33272A / muted brown #594A4E */
+  --text-primary: #33272a;
+  --text-secondary: #594a4e;
+
+  /* Matte solid surfaces: off-white #FFFFFE panels, cream #FAEEE7 tints */
+  --glass-bg: #fffffe;
+  --glass-bg-strong: #fffffe;
+  --glass-bg-subtle: #faeee7;
+  --glass-bg-hover: #f7e8de;
+  --glass-border: #edddd5;
+  --hairline: #f0e3db;
+  --glass-shadow: 0 6px 18px rgba(51, 39, 42, 0.06);
+  --glass-shadow-lg: 0 14px 34px rgba(51, 39, 42, 0.1);
+
+  /* Primary pink #FF8BA7, soft pink #FFC6C7 */
+  --accent: #ff8ba7;
+  --accent-2: #ffc6c7;
+  --accent-3: #f76c8e;
+  --accent-text: #c2415c;
+  --accent-soft: #ffe3ea;
+  --accent-line: #ffc6c7;
+  --glow-accent: 0 3px 10px rgba(51, 39, 42, 0.08);
+
+  /* Soft green #C3F0CA (derived deep green for text/borders) */
+  --success: #c3f0ca;
+  --success-strong: #3e8e5a;
+  --success-soft: #ddf6e1;
+  --success-line: #a9dcb5;
+
+  /* Muted pastel semantics */
+  --danger: #f3b0a8;
+  --danger-strong: #b3564a;
+  --danger-soft: #fbe3e0;
+  --danger-line: #e8b7b0;
+  --warning: #f6d9a2;
+  --warning-strong: #9a6b27;
+  --info: #b7d2f0;
+  --info-strong: #3f6ea8;
+
+  --online: #3e8e5a;
+  --offline: #cbb8b2;
+}
+
+@theme inline {
+  /* Typography: Plus Jakarta Sans for UI, DM Sans for conversational text */
+  --font-sans: var(--font-stack-ui);
+  --font-dm: var(--font-stack-dm);
+
+  --color-surface: var(--surface-background);
+  --color-ink: var(--text-primary);
+  --color-ink-muted: var(--text-secondary);
+
+  --color-glass: var(--glass-bg);
+  --color-glass-strong: var(--glass-bg-strong);
+  --color-glass-subtle: var(--glass-bg-subtle);
+  --color-glass-hover: var(--glass-bg-hover);
+  --color-glassline: var(--glass-border);
+  --color-hairline: var(--hairline);
+
+  --color-accent: var(--accent);
+  --color-accent-2: var(--accent-2);
+  --color-accent-3: var(--accent-3);
+  --color-accent-text: var(--accent-text);
+  --color-accent-soft: var(--accent-soft);
+  --color-accentline: var(--accent-line);
+
+  --color-success: var(--success);
+  --color-success-strong: var(--success-strong);
+  --color-success-soft: var(--success-soft);
+  --color-success-line: var(--success-line);
+  --color-danger: var(--danger);
+  --color-danger-strong: var(--danger-strong);
+  --color-danger-soft: var(--danger-soft);
+  --color-danger-line: var(--danger-line);
+  --color-warning: var(--warning);
+  --color-warning-strong: var(--warning-strong);
+  --color-info: var(--info);
+  --color-info-strong: var(--info-strong);
+
+  --color-online: var(--online);
+  --color-offline: var(--offline);
+}
+
+html,
+body {
+  height: 100%;
+}
+
+html {
+  color-scheme: light;
+  background-color: var(--surface-background);
+}
+
+body {
+  background-color: var(--surface-background);
+  color: var(--text-primary);
+  font-family: var(--font-stack-ui);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Placeholders read as soft conversational text. */
+input::placeholder,
+textarea::placeholder {
+  font-family: var(--font-stack-dm);
+}
+
+/* Base focus affordance. Lives in the base layer so component focus styles
+   (e.g. the composer's pill ring or outline-none text fields) can override it. */
+@layer base {
+  :where(button, a, input, textarea, select, [tabindex]):focus-visible {
+    outline: 2px solid var(--accent-text);
+    outline-offset: 2px;
+  }
+}
+
+::selection {
+  background: #ffc6c7;
+  color: var(--text-primary);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(89, 74, 78, 0.35) transparent;
+}
+
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* ==========================================================================
+   Emoji (Twemoji)
+   ========================================================================== */
+
+/* Bundled Twemoji SVGs replace native emoji glyphs so they look identical on
+   every platform. Sized in em so they follow the surrounding text. */
+.hearth-emoji {
+  display: inline-block;
+  width: 1.15em;
+  height: 1.15em;
+  margin: 0 0.03em;
+  vertical-align: -0.18em;
+}
+
+/* ==========================================================================
+   Surfaces
+   ========================================================================== */
+
+.glass-panel {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+}
+
+.glass-panel-strong {
+  background: var(--glass-bg-strong);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow-lg);
+}
+
+.glass-panel-subtle {
+  background: var(--glass-bg-subtle);
+  border: 1px solid var(--hairline);
+}
+
+/* Full-bleed surface for page-level regions (no border/shadow/radius).
+   Edges are drawn with hairline utilities. */
+.glass-fill {
+  background: var(--glass-bg);
+}
+
+.glass-fill-strong {
+  background: var(--glass-bg-strong);
+}
+
+/* Tinted surface for dense/scrollable content (lists, cards, bubbles) */
+.glass-tint {
+  background: var(--glass-bg-subtle);
+  border: 1px solid var(--hairline);
+}
+
+.glass-tint-strong {
+  background: var(--glass-bg);
+  border: 1px solid var(--hairline);
+}
+
+.glass-hover {
+  transition: background-color 0.2s ease, border-color 0.2s ease,
+    box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.glass-hover:hover {
+  background: var(--glass-bg-hover);
+}
+
+.glass-active {
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-line);
+  box-shadow: 0 3px 10px rgba(51, 39, 42, 0.06);
+}
+
+.glass-menu {
+  background: var(--glass-bg-strong);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow-lg);
+}
+
+/* Compact icon button used across headers, lists and menus */
+.glass-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  border: 1px solid var(--hairline);
+  background: var(--glass-bg-subtle);
+  color: var(--text-secondary);
+  transition: background-color 0.2s ease, color 0.2s ease,
+    border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+}
+
+.glass-icon-btn:hover {
+  background: var(--glass-bg-hover);
+  color: var(--text-primary);
+  border-color: var(--glass-border);
+  box-shadow: 0 4px 14px rgba(51, 39, 42, 0.08);
+}
+
+.glass-icon-btn:active {
+  transform: scale(0.94);
+}
+
+.glass-icon-btn[aria-pressed="true"],
+.glass-icon-btn.is-active {
+  background: var(--accent-soft);
+  border-color: var(--accent-line);
+  color: var(--accent-text);
+}
+
+/* Text input on the warm surface */
+.glass-input {
+  width: 100%;
+  border-radius: 9999px;
+  border: 1px solid var(--hairline);
+  background: var(--glass-bg-subtle);
+  color: var(--text-primary);
+  transition: border-color 0.2s ease, background-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.glass-input::placeholder {
+  color: var(--text-secondary);
+  opacity: 0.75;
+}
+
+.glass-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: var(--glass-bg);
+  box-shadow: 0 0 0 3px #ffdbe3;
+}
+
+/* Matte accent fill for primary actions (buttons, badges) */
+.bg-accent-gradient {
+  background: var(--accent);
+  color: var(--text-primary);
+}
+
+.accent-text-gradient {
+  color: var(--accent-text);
+}
+
+.glow-accent {
+  box-shadow: var(--glow-accent);
+}
+
+/* ==========================================================================
+   Ambient background
+   ========================================================================== */
+
+.ambient-base {
+  position: absolute;
+  inset: 0;
+  background: var(--surface-background);
+}
+
+/* Composer: cream pill with a soft pink focus outline */
+.glass-composer {
+  background: var(--glass-bg-subtle);
+  border: 1px solid var(--glass-border);
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.glass-composer:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px #ffdbe3;
+}
+
+/* Message bubbles: flat matte layers */
+.bubble-in {
+  background: var(--glass-bg-subtle);
+  border: 1px solid var(--hairline);
+  box-shadow: 0 3px 10px rgba(51, 39, 42, 0.05);
+}
+
+.bubble-out {
+  background: #ffd9e1;
+  border: 1px solid var(--accent-line);
+  box-shadow: 0 3px 10px rgba(51, 39, 42, 0.06);
+}
+
+/* ==========================================================================
+   Chat canvas
+   ========================================================================== */
+
+.chat-wallpaper {
+  background-color: transparent;
+}
+
+/* ==========================================================================
+   Keyframes
+   ========================================================================== */
+
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(-8px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fade-slide-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pop-in {
+  from { opacity: 0; transform: scale(0.94) translateY(6px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes bubble-in-right {
+  from { opacity: 0; transform: translateX(14px) translateY(4px) scale(0.96); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes bubble-in-left {
+  from { opacity: 0; transform: translateX(-14px) translateY(4px) scale(0.96); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes ignite {
+  0% { box-shadow: 0 0 0 0 rgba(51, 39, 42, 0); }
+  30% { box-shadow: 0 0 16px 3px rgba(51, 39, 42, 0.12); }
+  100% { box-shadow: 0 0 0 0 rgba(51, 39, 42, 0); }
+}
+
+@keyframes check-pop {
+  0% { opacity: 0; transform: scale(0.4); }
+  60% { opacity: 1; transform: scale(1.2); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes bubble-pending {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+@keyframes typing-dot {
+  0%, 70%, 100% { transform: translateY(0) scale(1); opacity: 0.35; }
+  30% { transform: translateY(-5px) scale(1.08); opacity: 1; }
+}
+
+@keyframes typing-dot-fade {
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 1; }
+}
+
+@keyframes float-soft {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-7px); }
+}
+
+@keyframes presence-ring {
+  0% { box-shadow: 0 0 0 0 rgba(62, 142, 90, 0.45); }
+  70% { box-shadow: 0 0 0 5px rgba(62, 142, 90, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(62, 142, 90, 0); }
+}
+
+@keyframes glow-accent-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(51, 39, 42, 0.1); }
+  50% { box-shadow: 0 0 14px 2px rgba(51, 39, 42, 0.08); }
+}
+
+
+
+/* ---------- Animation utilities ---------- */
+
+.animate-toast-in { animation: toast-in 0.2s ease-out; }
+.animate-fade-in { animation: fade-in 0.25s ease-out both; }
+.animate-fade-slide-up { animation: fade-slide-up 0.3s ease-out both; }
+.animate-pop-in { animation: pop-in 0.22s cubic-bezier(0.2, 0.9, 0.3, 1.15) both; }
+.animate-bubble-in-right { animation: bubble-in-right 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.12) both; }
+.animate-bubble-in-left { animation: bubble-in-left 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.12) both; }
+.animate-ignite { animation: ignite 0.75s ease-out; }
+.animate-check-pop { animation: check-pop 0.24s ease-out both; }
+.animate-bubble-pending { animation: bubble-pending 1.5s ease-in-out infinite; }
+
+.typing-dot {
+  transform: translateZ(0);
+  will-change: transform, opacity;
+  animation: typing-dot 1.35s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+
+.typing-dot:nth-child(2) { animation-delay: 0.16s; }
+.typing-dot:nth-child(3) { animation-delay: 0.32s; }
+
+.animate-float { animation: float-soft 3.6s ease-in-out infinite; }
+.animate-presence { animation: presence-ring 2.6s ease-out infinite; }
+.animate-ember { animation: glow-accent-pulse 3.2s ease-in-out infinite; }
+
+/* ---------- Skeletons ---------- */
+
+.skeleton-shimmer {
+  background: #f2e5de;
+}
+
+/* ---------- Reduced motion ----------
+   Driven by the .reduce-motion / .motion-full classes so the in-app Motion
+   setting can override the OS preference. The media query is a pre-hydration
+   fallback for users whose OS asks for reduced motion. */
+
+@media (prefers-reduced-motion: reduce) {
+  html:not(.motion-full) :is(.animate-toast-in, .animate-pop-in, .animate-fade-slide-up) {
+    animation: fade-in 0.18s ease-out both !important;
+  }
+
+  html:not(.motion-full) :is(.animate-bubble-in-right, .animate-bubble-in-left) {
+    animation: fade-in 0.18s ease-out both !important;
+  }
+
+  html:not(.motion-full) :is(.animate-ignite, .animate-check-pop, .animate-float,
+      .animate-presence, .animate-ember, .animate-bubble-pending,
+      .skeleton-shimmer) {
+    animation: none !important;
+  }
+
+  html:not(.motion-full) .typing-dot {
+    animation: typing-dot-fade 1.5s ease-in-out infinite !important;
+  }
+
+  html:not(.motion-full) * {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+html.reduce-motion :is(.animate-toast-in, .animate-pop-in, .animate-fade-slide-up) {
+  animation: fade-in 0.18s ease-out both !important;
+}
+
+html.reduce-motion :is(.animate-bubble-in-right, .animate-bubble-in-left) {
+  animation: fade-in 0.18s ease-out both !important;
+}
+
+html.reduce-motion :is(.animate-ignite, .animate-check-pop, .animate-float,
+    .animate-presence, .animate-ember, .animate-bubble-pending,
+    .skeleton-shimmer) {
+  animation: none !important;
+}
+
+html.reduce-motion .typing-dot {
+  animation: typing-dot-fade 1.5s ease-in-out infinite !important;
+}
+
+html.reduce-motion * {
+  scroll-behavior: auto !important;
+}

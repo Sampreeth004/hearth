@@ -1,0 +1,20 @@
+{
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "auth": {
+    "providers": {
+      "googleSignIn": {
+        "oAuthBrandDisplayName": "Hearth",
+        "supportEmail": "sivakotisaisampreeth@gmail.com",
+        "authorizedRedirectUris": [
+          "https://hearth-messenger.vercel.app/__/auth/handler",
+          "https://hearth-henna-psi.vercel.app/__/auth/handler",
+          "https://fir-chat-app-da571.firebaseapp.com/__/auth/handler",
+          "https://fir-chat-app-da571.web.app/__/auth/handler"
+        ]
+      }
+    }
+  }
+}

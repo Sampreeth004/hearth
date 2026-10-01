@@ -1,0 +1,189 @@
+rules_version = '2';
+
+// Security model:
+// - All access requires an authenticated user.
+// - Users can read every user profile (needed for search) but may only
+//   create/update their own document.
+// - Friend request document IDs are the deterministically sorted pair
+//   "<uidA>_<uidB>", which makes duplicates impossible. Only the receiver
+//   can accept/reject a request (consent), and only when it is pending.
+// - A friendship can only be created if the matching friend request exists
+//   and has been accepted by the receiver.
+// - Conversations are readable/writable only by their participants.
+// - Messages can only be created by a participant with senderId == auth.uid,
+//   and can only be marked as read by their intended receiver.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isSelf(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    function sortedPair(a, b) {
+      return a < b ? a + "_" + b : b + "_" + a;
+    }
+
+    function requestExists(id) {
+      return exists(/databases/$(database)/documents/friendRequests/$(id));
+    }
+
+    function requestData(id) {
+      return get(/databases/$(database)/documents/friendRequests/$(id)).data;
+    }
+
+    function conversationExists(id) {
+      return exists(/databases/$(database)/documents/conversations/$(id));
+    }
+
+    function conversationData(id) {
+      return get(/databases/$(database)/documents/conversations/$(id)).data;
+    }
+
+    function isConversationParticipant(id) {
+      return isSignedIn()
+        && conversationExists(id)
+        && request.auth.uid in conversationData(id).participants;
+    }
+
+    // Profile photos are stored as compressed Base64 data URLs (no Cloud
+    // Storage required). Keep the user document well under the 1 MiB limit.
+    function profileWithinLimits() {
+      return request.resource.data.get("photoURL", "").size() <= 500000
+        && request.resource.data.get("bio", "").size() <= 500
+        && request.resource.data.get("displayName", "").size() <= 100
+        && request.resource.data.get("username", "").size() <= 40;
+    }
+
+    // Map.get() only applies its default when the key is absent, so explicit
+    // null values must be handled separately to avoid evaluation errors.
+    function optionalStringWithinLimit(value, maxLength) {
+      return value == null || (value is string && value.size() <= maxLength);
+    }
+
+    // A reaction update may only add, change or remove the caller's own entry.
+    function reactionsTouchedOnlyBy(uid) {
+      return request.resource.data.get("reactions", {}).diff(resource.data.get("reactions", {})).affectedKeys().hasOnly([uid])
+        && optionalStringWithinLimit(request.resource.data.get("reactions", {}).get(uid, ""), 8);
+    }
+
+    match /users/{userId} {
+      allow read: if isSignedIn();
+      allow create: if isSelf(userId) && profileWithinLimits();
+      allow update: if isSelf(userId) && profileWithinLimits();
+      allow delete: if false;
+    }
+
+    // Web push subscriptions. Readable by any signed-in user so the notify API
+    // route can deliver a message; writable only by their owner.
+    match /pushSubscriptions/{userId} {
+      allow read: if isSignedIn();
+      allow write: if isSelf(userId);
+    }
+
+    match /friendRequests/{requestId} {
+      allow read: if isSignedIn()
+        && (request.auth.uid == resource.data.senderId
+            || request.auth.uid == resource.data.receiverId);
+
+      allow create: if isSignedIn()
+        && request.resource.data.senderId == request.auth.uid
+        && request.resource.data.senderId != request.resource.data.receiverId
+        && request.resource.data.status == "pending"
+        && requestId == sortedPair(request.resource.data.senderId, request.resource.data.receiverId)
+        && exists(/databases/$(database)/documents/users/$(request.resource.data.receiverId));
+
+      // Only the receiver decides the outcome, and only while pending.
+      allow update: if isSignedIn()
+        && request.auth.uid == resource.data.receiverId
+        && resource.data.status == "pending"
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["status"])
+        && request.resource.data.status in ["accepted", "rejected"];
+
+      // Sender cancels a pending (or previously rejected) request;
+      // receiver can clean up a request they rejected.
+      allow delete: if isSignedIn()
+        && ((request.auth.uid == resource.data.senderId
+             && resource.data.status in ["pending", "rejected"])
+            || (request.auth.uid == resource.data.receiverId
+                && resource.data.status == "rejected"));
+    }
+
+    match /friendships/{friendshipId} {
+      allow read: if isSignedIn() && request.auth.uid in resource.data.users;
+
+      // A friendship requires proof: the same-pair request must be accepted.
+      allow create: if isSignedIn()
+        && request.resource.data.users.size() == 2
+        && request.auth.uid in request.resource.data.users
+        && requestExists(friendshipId)
+        && requestData(friendshipId).status == "accepted"
+        && requestData(friendshipId).senderId in request.resource.data.users
+        && requestData(friendshipId).receiverId in request.resource.data.users;
+
+      allow update: if false;
+      allow delete: if isSignedIn() && request.auth.uid in resource.data.users;
+    }
+
+    match /conversations/{conversationId} {
+      // Uses resource.data (not get()), because collection-level LIST queries
+      // cannot evaluate get()/exists() against an unbound document ID.
+      // The client query is constrained by `participants array-contains uid`.
+      allow read: if isSignedIn()
+        && request.auth.uid in resource.data.participants;
+
+      allow create: if isSignedIn()
+        && request.resource.data.participants.size() >= 2
+        && request.auth.uid in request.resource.data.participants;
+
+      allow update: if isSignedIn()
+        && request.auth.uid in resource.data.participants;
+
+      allow delete: if false;
+
+      match /messages/{messageId} {
+        // Safe here: the parent conversationId is always bound by the path
+        // for both single-document reads and subcollection list queries.
+        allow read: if isConversationParticipant(conversationId);
+
+        allow create: if isSignedIn()
+          && request.resource.data.senderId == request.auth.uid
+          && isConversationParticipant(conversationId)
+          && request.resource.data.receiverId in conversationData(conversationId).participants
+          && optionalStringWithinLimit(request.resource.data.get("text", ""), 4000)
+          && optionalStringWithinLimit(request.resource.data.get("gifUrl", ""), 600)
+          && optionalStringWithinLimit(request.resource.data.get("messageType", "text"), 20)
+          && (request.resource.data.get("messageType", "text") == null
+              || request.resource.data.get("messageType", "text") in ["text", "gif", "share", "image"])
+          && (request.resource.data.get("messageType", "text") != "image"
+              || (request.resource.data.get("imageUrl", null) != null
+                  && optionalStringWithinLimit(request.resource.data.imageUrl, 700000)))
+          && (request.resource.data.get("messageType", "text") != "share"
+              || (request.resource.data.get("sharedShort", null) != null
+                  && optionalStringWithinLimit(request.resource.data.sharedShort.get("videoId", ""), 20)
+                  && optionalStringWithinLimit(request.resource.data.sharedShort.get("title", ""), 200)
+                  && optionalStringWithinLimit(request.resource.data.sharedShort.get("channelTitle", ""), 200)
+                  && optionalStringWithinLimit(request.resource.data.sharedShort.get("thumbnailUrl", ""), 500)))
+          && (request.resource.data.get("replyTo", null) == null
+              || (optionalStringWithinLimit(request.resource.data.replyTo.get("messageId", ""), 64)
+                  && optionalStringWithinLimit(request.resource.data.replyTo.get("senderName", ""), 100)
+                  && optionalStringWithinLimit(request.resource.data.replyTo.get("preview", ""), 200)));
+
+        // Receivers mark messages as read; any participant can toggle exactly
+        // their own emoji reaction.
+        allow update: if isSignedIn()
+          && isConversationParticipant(conversationId)
+          && ((request.auth.uid == resource.data.receiverId
+               && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["read"])
+               && request.resource.data.read == true)
+              || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(["reactions"])
+                  && reactionsTouchedOnlyBy(request.auth.uid)));
+
+        allow delete: if false;
+      }
+    }
+  }
+}
