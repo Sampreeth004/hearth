@@ -2,9 +2,8 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Image as ImageIcon, MessageCircle, Users } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { FlameMark, HearthLogo } from "@/components/ui/HearthLogo";
+import { FlameMark } from "@/components/ui/HearthLogo";
 import { useAuth } from "@/context/AuthContext";
 
 function GoogleIcon() {
@@ -30,24 +29,6 @@ function GoogleIcon() {
   );
 }
 
-const FEATURES = [
-  {
-    icon: MessageCircle,
-    title: "Real-time messaging",
-    description: "Instant delivery with read receipts.",
-  },
-  {
-    icon: ImageIcon,
-    title: "Photos, GIFs & reactions",
-    description: "Share moments and respond your way.",
-  },
-  {
-    icon: Users,
-    title: "Friends & presence",
-    description: "See who is online and stay close.",
-  },
-];
-
 export default function LoginPage() {
   const {
     user,
@@ -66,130 +47,74 @@ export default function LoginPage() {
     }
   }, [user, initializing, router]);
 
-  if (initializing) {
-    return (
-      <div className="flex min-h-dvh items-center justify-center">
+  return (
+    <main className="login-scene relative flex min-h-dvh items-center justify-center px-5 py-10 portrait:items-start portrait:pt-[8vh] sm:px-8">
+      <div
+        aria-hidden="true"
+        className="login-veil pointer-events-none absolute inset-0"
+      />
+
+      {initializing ? (
         <div
           role="status"
           aria-label="Loading"
-          className="h-8 w-8 animate-spin rounded-full border-2 border-accent/30 border-b-accent"
+          className="relative h-8 w-8 animate-spin rounded-full border-2 border-white/70 border-b-accent-text"
         />
-      </div>
-    );
-  }
+      ) : (
+        <section className="animate-fade-slide-up relative w-full max-w-sm rounded-[28px] border border-white/70 bg-white/85 px-7 py-9 text-center shadow-[0_24px_60px_rgba(51,39,42,0.16)] backdrop-blur-xl sm:px-9">
+          <span className="animate-ember mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-glassline bg-glass-subtle shadow-[0_8px_20px_rgba(51,39,42,0.08)]">
+            <FlameMark className="h-9 w-9" />
+          </span>
 
-  return (
-    <main className="min-h-dvh lg:grid lg:grid-cols-[1.05fr_1fr]">
-      {/* Brand panel — desktop only */}
-      <section className="bg-accent-gradient relative hidden flex-col justify-between overflow-hidden p-10 lg:flex">
-          <div className="relative z-10">
-            <HearthLogo size="lg" tone="inverted" />
-          </div>
+          <h1 className="mt-5 text-3xl font-bold tracking-tight text-ink">
+            Hearth
+          </h1>
+          <p className="font-dm mt-1.5 text-sm text-accent-text">
+            Chat. Connect. Create.
+          </p>
 
-          <div className="relative z-10 max-w-md py-6">
-            <h2 className="text-3xl font-bold leading-tight tracking-tight text-ink">
-              Chat. Connect. Create.
-            </h2>
-            <p className="font-dm mt-2 text-sm leading-relaxed text-ink/85">
-              A calm, warm place for conversations that matter.
+          <Button
+            type="button"
+            onClick={() => {
+              clearError();
+              void signIn();
+            }}
+            loading={signingIn}
+            size="lg"
+            className="mt-7 w-full"
+          >
+            {!signingIn && <GoogleIcon />}
+            Continue with Google
+          </Button>
+
+          {error && (
+            <p
+              role="alert"
+              className="mt-3 text-center text-sm text-danger-strong"
+            >
+              {error}
             </p>
+          )}
 
-            <ul className="mt-7 space-y-4">
-              {FEATURES.map(({ icon: Icon, title, description }) => (
-                <li key={title} className="flex items-start gap-3">
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white bg-white text-ink">
-                    <Icon className="h-4 w-4" />
-                  </span>
-                  <div>
-                    <p className="text-sm font-semibold text-ink">{title}</p>
-                    <p className="font-dm mt-0.5 text-xs text-ink/70">{description}</p>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </div>
+          <button
+            type="button"
+            onClick={() => {
+              clearError();
+              void signInWithRedirect();
+            }}
+            disabled={signingIn}
+            className="mt-4 w-full text-center text-xs font-medium text-ink-muted transition-colors hover:text-accent-text disabled:opacity-50"
+          >
+            Pop-up blocked? Sign in with a redirect instead
+          </button>
 
-          <p className="relative z-10 pt-4 text-xs font-medium text-ink/60">
-            Connect. Chat. Share. Grow.
+          <p className="font-dm mt-6 text-xs leading-relaxed text-ink-muted">
+            By continuing, you agree to our{" "}
+            <span className="font-medium text-ink">Terms of Service</span> and{" "}
+            <span className="font-medium text-ink">Privacy Policy</span>.
           </p>
         </section>
-
-      {/* Sign-in panel */}
-      <section className="glass-fill flex min-h-dvh flex-col justify-center px-6 py-10 sm:px-10 lg:min-h-0 lg:border-l lg:border-hairline lg:py-12">
-          <div className="animate-fade-slide-up mx-auto w-full max-w-sm">
-            {/* Mobile brand */}
-            <div className="mb-8 flex flex-col items-center text-center lg:hidden">
-              <span className="animate-ember flex h-16 w-16 items-center justify-center rounded-2xl border border-glassline bg-glass-subtle shadow-[0_8px_20px_rgba(51,39,42,0.08)]">
-                <FlameMark className="h-10 w-10" />
-              </span>
-              <h1 className="mt-4 text-3xl font-bold tracking-tight text-ink">
-                Hearth
-              </h1>
-              <p className="mt-1 text-sm font-semibold text-accent-text">
-                Chat. Connect. Create.
-              </p>
-            </div>
-
-            <h2 className="text-xl font-bold tracking-tight text-ink">
-              <span className="lg:hidden">Welcome to Hearth</span>
-              <span className="hidden lg:inline">Welcome back</span>
-            </h2>
-              <p className="font-dm mt-1 text-sm text-ink-muted">
-                <span className="lg:hidden">Connect. Chat. Share. Grow.</span>
-                <span className="hidden lg:inline">
-                  Sign in to continue to Hearth
-                </span>
-              </p>
-
-            <Button
-              type="button"
-              onClick={() => {
-                clearError();
-                void signIn();
-              }}
-              loading={signingIn}
-              size="lg"
-              className="mt-5 w-full"
-            >
-              {!signingIn && <GoogleIcon />}
-              Continue with Google
-            </Button>
-
-            {error && (
-              <p role="alert" className="mt-3 text-center text-sm text-danger-strong">
-                {error}
-              </p>
-            )}
-
-            <div className="my-5 flex items-center gap-3" aria-hidden="true">
-              <span className="h-px flex-1 bg-hairline" />
-              <span className="text-xs font-medium text-ink-muted">or</span>
-              <span className="h-px flex-1 bg-hairline" />
-            </div>
-
-            <p className="text-center text-sm font-semibold text-accent-text">
-              Secure. Simple. Fast.
-            </p>
-
-            <button
-              type="button"
-              onClick={() => {
-                clearError();
-                void signInWithRedirect();
-              }}
-              disabled={signingIn}
-              className="mt-4 w-full text-center text-xs font-medium text-ink-muted transition-colors hover:text-accent-text disabled:opacity-50"
-            >
-              Pop-up blocked? Sign in with a redirect instead
-            </button>
-
-            <p className="font-dm mt-6 text-center text-xs leading-relaxed text-ink-muted">
-              By continuing, you agree to our{" "}
-              <span className="font-medium text-ink">Terms of Service</span> and{" "}
-              <span className="font-medium text-ink">Privacy Policy</span>.
-            </p>
-          </div>
-      </section>
+      )}
     </main>
   );
 }

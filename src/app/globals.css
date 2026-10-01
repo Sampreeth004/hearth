@@ -306,6 +306,37 @@ textarea::placeholder {
   background: var(--surface-background);
 }
 
+/* ==========================================================================
+   Login scene
+   ========================================================================== */
+
+/* Full-bleed pastel wallpaper. The mascot sits in the lower-right of the
+   artwork, so on narrow portrait screens the crop is biased towards it to
+   keep it in frame. Wide screens show it anchored to the right edge. */
+.login-scene {
+  background-color: var(--surface-background);
+  background-image: url("/background_login.jpg");
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: 82% bottom;
+}
+
+@media (min-width: 1024px) {
+  .login-scene {
+    background-position: right bottom;
+  }
+}
+
+/* Soft highlight that lifts the sign-in card off the wallpaper. */
+.login-veil {
+  background: radial-gradient(
+    120% 90% at 50% 40%,
+    rgba(255, 255, 255, 0.34) 0%,
+    rgba(255, 255, 255, 0.08) 48%,
+    rgba(255, 255, 255, 0) 75%
+  );
+}
+
 /* Composer: cream pill with a soft pink focus outline */
 .glass-composer {
   background: var(--glass-bg-subtle);
